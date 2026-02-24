@@ -1,0 +1,5 @@
+{
+  "name": "Journal MVP",
+  "description": "A minimal, offline-first journaling app with mood tracking, activities, and gratitude.",
+  "requestFramePermissions": []
+}
