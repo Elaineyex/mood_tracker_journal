@@ -1,20 +1,46 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Mood Tracker & Period Journal
 
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
+A local-first journaling application that tracks your mood, activities, and integrates menstrual cycle data for health insights.
 
 View your app in AI Studio: https://ai.studio/apps/bf7e596b-d51e-4149-a6b1-f7a462e14b32
 
+## Features
+
+- **Daily Journaling:** Track mood, activities, and gratitude.
+- **Visual Insights:** Charts for mood trends and distribution.
+- **Health Integration:** Period tracking with prediction logic (based on Clue methodology).
+- **Historical Support:** Add and edit entries for past dates.
+- **Privacy Focused:** Local storage using SQLite and Markdown files.
+
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisites:** Node.js, Python 3 (with `pandas` and `numpy`)
 
+1. **Install dependencies:**
+   ```bash
+   npm install
+   pip install pandas numpy
+   ```
+2. **Set up the database:**
+   The database will be automatically initialized when you run the ingestion script or the server.
+3. **Run the app:**
+   ```bash
+   npm run dev
+   ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Period Data Integration
+
+To import historical data from Clue:
+
+1. Place your Clue export folder (e.g., `ClueDataDownload-YYYY-MM-DD`) in the root directory.
+2. Ensure the `measurements.json` path in `ingest_clue.py` matches your export.
+3. Run the ingestion script:
+   ```bash
+   python3 ingest_clue.py
+   ```
+
+The script will:
+- Clean and map Clue data to the local SQLite database.
+- Calculate cycle length averages and standard deviations.
+- Predict your next period and ovulation dates.
+- Link period logs to your existing journal entries.

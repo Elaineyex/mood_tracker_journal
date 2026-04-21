@@ -6,3 +6,13 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local data
+journal.db
+entries/
+uploads/
+ClueDataDownload-*/
+__pycache__/
+*.pyc
+check_data.py
+add_manual_data.py

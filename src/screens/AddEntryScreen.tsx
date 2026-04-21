@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Image as ImageIcon } from 'lucide-react';
 
 export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
   const [mood, setMood] = useState<number | null>(null);
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [activities, setActivities] = useState<string[]>([]);
   const [gratitude1, setGratitude1] = useState('');
   const [gratitude2, setGratitude2] = useState('');
@@ -19,6 +20,7 @@ export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
     setLoading(true);
     try {
       await api.createEntry({
+        date: new Date(date).toISOString(),
         mood,
         activities,
         gratitude1,
@@ -52,6 +54,16 @@ export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
       </div>
 
       <div className="p-4 space-y-8 max-w-2xl mx-auto">
+        <section className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-0">Date</h2>
+          <input 
+            type="date" 
+            value={date} 
+            onChange={e => setDate(e.target.value)}
+            className="text-gray-700 bg-transparent focus:outline-none focus:text-emerald-600 font-medium"
+          />
+        </section>
+
         <section>
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">How are you?</h2>
           <MoodSelector selected={mood} onChange={setMood} />

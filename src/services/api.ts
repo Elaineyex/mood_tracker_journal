@@ -55,5 +55,11 @@ export const api = {
     });
     if (!res.ok) throw new Error(`Failed to delete entry: ${res.statusText}`);
     return res.json();
+  },
+
+  getInsights: async (): Promise<{ summary: string, predictions: any }> => {
+    const res = await fetch('/api/insights');
+    if (!res.ok) throw new Error(`Failed to fetch insights: ${res.statusText}`);
+    return res.json();
   }
 };
