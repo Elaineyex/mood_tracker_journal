@@ -2,7 +2,6 @@
 
 A local-first journaling application that tracks your mood, activities, and integrates menstrual cycle data for health insights.
 
-View your app in AI Studio: https://ai.studio/apps/bf7e596b-d51e-4149-a6b1-f7a462e14b32
 
 ## Features
 

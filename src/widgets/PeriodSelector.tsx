@@ -7,7 +7,7 @@ export default function PeriodSelector({ volume, pain, color, onChange }: {
   color?: string;
   onChange: (field: 'periodVolume' | 'periodPain' | 'periodColor', value: any) => void;
 }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
