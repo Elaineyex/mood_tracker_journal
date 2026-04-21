@@ -31,24 +31,25 @@ export default function PeriodSelector({ volume, pain, color, onChange }: {
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Volume</h3>
             <div className="flex justify-between gap-2">
               {[
-                { v: 1, l: 'Spotting', icon: '🩸' }, 
-                { v: 2, l: 'Light', icon: '💧' }, 
-                { v: 3, l: 'Medium', icon: '💧💧' }, 
-                { v: 4, l: 'Heavy', icon: '🌊' }
+                { v: 1, l: 'Spotting' }, 
+                { v: 2, l: 'Light' }, 
+                { v: 3, l: 'Medium' }, 
+                { v: 4, l: 'Heavy' }
               ].map(item => (
                 <button 
                   key={item.v}
                   onClick={() => onChange('periodVolume', volume === item.v ? undefined : item.v)}
                   className="flex flex-col items-center gap-2 flex-1"
                 >
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors border-2 ${
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
                     volume === item.v 
-                      ? 'bg-red-50 text-red-500 border-red-500' 
-                      : 'bg-gray-50 text-gray-400 border-transparent hover:border-red-200'
+                      ? 'bg-emerald-500 text-white' 
+                      : 'bg-gray-100 text-gray-500'
                   }`}>
-                    <span className="text-xl">{item.icon}</span>
+                    <span className="text-xs font-medium text-center leading-tight px-1">
+                      {item.l}
+                    </span>
                   </div>
-                  <span className="text-xs font-medium text-center leading-tight px-1 text-gray-600">{item.l}</span>
                 </button>
               ))}
             </div>
@@ -59,21 +60,23 @@ export default function PeriodSelector({ volume, pain, color, onChange }: {
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Color</h3>
             <div className="flex gap-4">
               {[
-                { v: 'red', l: 'Red', bg: 'bg-red-600' }, 
-                { v: 'brown', l: 'Brown', bg: 'bg-[#7E4C3A]' } // more pleasing brown
+                { v: 'red', l: 'Red' }, 
+                { v: 'brown', l: 'Brown' }
               ].map(item => (
                 <button 
                   key={item.v}
                   onClick={() => onChange('periodColor', color === item.v ? undefined : item.v)}
-                  className="flex flex-col items-center gap-2"
+                  className="flex flex-col items-center gap-2 flex-1"
                 >
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all border-2 ${
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
                     color === item.v 
-                      ? `border-gray-800 ${item.bg} scale-110 shadow-sm` 
-                      : `border-transparent ${item.bg} opacity-80 hover:opacity-100`
+                      ? 'bg-emerald-500 text-white' 
+                      : 'bg-gray-100 text-gray-500'
                   }`}>
+                    <span className="text-xs font-medium text-center leading-tight px-1">
+                      {item.l}
+                    </span>
                   </div>
-                  <span className="text-xs font-medium text-gray-600">{item.l}</span>
                 </button>
               ))}
             </div>
@@ -90,13 +93,17 @@ export default function PeriodSelector({ volume, pain, color, onChange }: {
                  <button
                   key={v}
                   onClick={() => onChange('periodPain', pain === v ? undefined : v)}
-                  className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold transition-all border-2 ${
-                    pain === v 
-                      ? 'bg-indigo-50 text-indigo-600 border-indigo-500 scale-110' 
-                      : 'bg-gray-50 text-gray-400 border-transparent hover:border-indigo-200'
-                  }`}
+                  className="flex flex-col items-center gap-2 flex-1"
                  >
-                    {v}
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+                    pain === v 
+                      ? 'bg-emerald-500 text-white' 
+                      : 'bg-gray-100 text-gray-500'
+                  }`}>
+                    <span className="text-xs font-medium text-center leading-tight px-1">
+                      {v}
+                    </span>
+                  </div>
                  </button>
               ))}
             </div>
