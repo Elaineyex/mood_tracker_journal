@@ -16,6 +16,9 @@ export const api = {
     formData.append('gratitude2', entry.gratitude2 || '');
     formData.append('gratitude3', entry.gratitude3 || '');
     formData.append('journal', entry.journal || '');
+    if (entry.periodVolume !== undefined) formData.append('periodVolume', String(entry.periodVolume));
+    if (entry.periodPain !== undefined) formData.append('periodPain', String(entry.periodPain));
+    if (entry.periodColor !== undefined) formData.append('periodColor', entry.periodColor);
     
     if (entry.imagePath) formData.append('imagePath', entry.imagePath);
     if (file) formData.append('image', file);
@@ -37,6 +40,9 @@ export const api = {
     formData.append('gratitude2', entry.gratitude2 || '');
     formData.append('gratitude3', entry.gratitude3 || '');
     formData.append('journal', entry.journal || '');
+    if (entry.periodVolume !== undefined) formData.append('periodVolume', String(entry.periodVolume));
+    if (entry.periodPain !== undefined) formData.append('periodPain', String(entry.periodPain));
+    if (entry.periodColor !== undefined) formData.append('periodColor', entry.periodColor);
     
     if (entry.imagePath) formData.append('imagePath', entry.imagePath);
     if (file) formData.append('image', file);

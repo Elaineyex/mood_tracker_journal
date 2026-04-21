@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../services/api';
 import MoodSelector from '../widgets/MoodSelector';
 import ActivitySelector from '../widgets/ActivitySelector';
+import PeriodSelector from '../widgets/PeriodSelector';
 import { ArrowLeft, Check, Image as ImageIcon } from 'lucide-react';
 
 export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
@@ -12,8 +13,17 @@ export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
   const [gratitude2, setGratitude2] = useState('');
   const [gratitude3, setGratitude3] = useState('');
   const [journal, setJournal] = useState('');
+  const [periodVolume, setPeriodVolume] = useState<number | undefined>(undefined);
+  const [periodPain, setPeriodPain] = useState<number | undefined>(undefined);
+  const [periodColor, setPeriodColor] = useState<string | undefined>(undefined);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const handlePeriodChange = (field: 'periodVolume' | 'periodPain' | 'periodColor', value: any) => {
+    if (field === 'periodVolume') setPeriodVolume(value);
+    if (field === 'periodPain') setPeriodPain(value);
+    if (field === 'periodColor') setPeriodColor(value);
+  };
 
   const handleSave = async () => {
     if (!mood) return alert('Please select a mood');
@@ -27,6 +37,9 @@ export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
         gratitude2,
         gratitude3,
         journal,
+        periodVolume,
+        periodPain,
+        periodColor,
       }, file || undefined);
       onBack();
     } catch (e) {
@@ -72,6 +85,15 @@ export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
         <section>
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">What have you been doing?</h2>
           <ActivitySelector selected={activities} onChange={setActivities} />
+        </section>
+
+        <section>
+          <PeriodSelector 
+            volume={periodVolume} 
+            pain={periodPain} 
+            color={periodColor} 
+            onChange={handlePeriodChange} 
+          />
         </section>
 
         <section>

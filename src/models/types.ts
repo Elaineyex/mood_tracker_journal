@@ -8,6 +8,9 @@ export interface JournalEntry {
   gratitude3: string;
   journal: string;
   imagePath?: string | null;
+  periodVolume?: number;
+  periodPain?: number;
+  periodColor?: string;
 }
 
 export const MOODS = [

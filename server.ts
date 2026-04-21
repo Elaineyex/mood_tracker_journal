@@ -25,7 +25,7 @@ function parseEntry(content: string): any | null {
     const val = line.slice(colonIdx + 1).trim();
     if (key === 'activities') {
       try { entry[key] = JSON.parse(val); } catch { entry[key] = []; }
-    } else if (key === 'mood' || key === 'id') {
+    } else if (key === 'mood' || key === 'id' || key === 'periodVolume' || key === 'periodPain') {
       entry[key] = Number(val);
     } else {
       entry[key] = val === '' ? null : val;
@@ -44,6 +44,9 @@ gratitude1: ${entry.gratitude1 || ''}
 gratitude2: ${entry.gratitude2 || ''}
 gratitude3: ${entry.gratitude3 || ''}
 imagePath: ${entry.imagePath || ''}
+periodVolume: ${entry.periodVolume ?? ''}
+periodPain: ${entry.periodPain ?? ''}
+periodColor: ${entry.periodColor || ''}
 ---
 ${entry.journal || ''}`;
 }
@@ -96,7 +99,7 @@ app.get('/api/entries', (req, res) => {
 });
 
 app.post('/api/entries', upload.single('image'), (req, res) => {
-  const { date, mood, activities, gratitude1, gratitude2, gratitude3, journal } = req.body;
+  const { date, mood, activities, gratitude1, gratitude2, gratitude3, journal, periodVolume, periodPain, periodColor } = req.body;
   const id = Date.now();
   const imagePath = req.file ? `/uploads/${req.file.filename}` : (req.body.imagePath || '');
   const dateStr = date ? new Date(date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
@@ -105,6 +108,9 @@ app.post('/api/entries', upload.single('image'), (req, res) => {
     activities: JSON.parse(activities || '[]'),
     gratitude1: gratitude1 || '', gratitude2: gratitude2 || '',
     gratitude3: gratitude3 || '', journal: journal || '', imagePath,
+    periodVolume: periodVolume ? Number(periodVolume) : undefined,
+    periodPain: periodPain ? Number(periodPain) : undefined,
+    periodColor: periodColor || undefined,
   };
   fs.writeFileSync(path.join(entriesDir, `${dateStr}-${id}.md`), serializeEntry(entry));
   res.json({ id });
@@ -112,7 +118,7 @@ app.post('/api/entries', upload.single('image'), (req, res) => {
 
 app.put('/api/entries/:id', upload.single('image'), (req, res) => {
   const id = Number(req.params.id);
-  const { date, mood, activities, gratitude1, gratitude2, gratitude3, journal } = req.body;
+  const { date, mood, activities, gratitude1, gratitude2, gratitude3, journal, periodVolume, periodPain, periodColor } = req.body;
   const imagePath = req.file ? `/uploads/${req.file.filename}` : (req.body.imagePath || '');
   const dateStr = date ? new Date(date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
   const newFilename = `${dateStr}-${id}.md`;
@@ -125,6 +131,9 @@ app.put('/api/entries/:id', upload.single('image'), (req, res) => {
     activities: JSON.parse(activities || '[]'),
     gratitude1: gratitude1 || '', gratitude2: gratitude2 || '',
     gratitude3: gratitude3 || '', journal: journal || '', imagePath,
+    periodVolume: periodVolume ? Number(periodVolume) : undefined,
+    periodPain: periodPain ? Number(periodPain) : undefined,
+    periodColor: periodColor || undefined,
   };
   fs.writeFileSync(path.join(entriesDir, newFilename), serializeEntry(entry));
   res.json({ success: true });
