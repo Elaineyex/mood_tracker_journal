@@ -4,18 +4,25 @@ import MoodSelector from '../widgets/MoodSelector';
 import ActivitySelector from '../widgets/ActivitySelector';
 import PeriodSelector from '../widgets/PeriodSelector';
 import { ArrowLeft, Check, Image as ImageIcon } from 'lucide-react';
+import { JournalEntry } from '../models/types';
 
-export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
-  const [mood, setMood] = useState<number | null>(null);
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [activities, setActivities] = useState<string[]>([]);
-  const [gratitude1, setGratitude1] = useState('');
-  const [gratitude2, setGratitude2] = useState('');
-  const [gratitude3, setGratitude3] = useState('');
-  const [journal, setJournal] = useState('');
-  const [periodVolume, setPeriodVolume] = useState<number | undefined>(undefined);
-  const [periodPain, setPeriodPain] = useState<number | undefined>(undefined);
-  const [periodColor, setPeriodColor] = useState<string | undefined>(undefined);
+type AddEntryScreenProps = {
+  entry?: JournalEntry;
+  onBack: () => void;
+};
+
+export default function AddEntryScreen({ entry, onBack }: AddEntryScreenProps) {
+  const isEditing = Boolean(entry?.id);
+  const [mood, setMood] = useState<number | null>(entry?.mood ?? null);
+  const [date, setDate] = useState(entry?.date ? entry.date.slice(0, 10) : new Date().toISOString().slice(0, 10));
+  const [activities, setActivities] = useState<string[]>(entry?.activities ?? []);
+  const [gratitude1, setGratitude1] = useState(entry?.gratitude1 ?? '');
+  const [gratitude2, setGratitude2] = useState(entry?.gratitude2 ?? '');
+  const [gratitude3, setGratitude3] = useState(entry?.gratitude3 ?? '');
+  const [journal, setJournal] = useState(entry?.journal ?? '');
+  const [periodVolume, setPeriodVolume] = useState<number | undefined>(entry?.periodVolume);
+  const [periodPain, setPeriodPain] = useState<number | undefined>(entry?.periodPain);
+  const [periodColor, setPeriodColor] = useState<string | undefined>(entry?.periodColor);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +36,7 @@ export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
     if (!mood) return alert('Please select a mood');
     setLoading(true);
     try {
-      await api.createEntry({
+      const payload = {
         date: new Date(date).toISOString(),
         mood,
         activities,
@@ -40,11 +47,19 @@ export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
         periodVolume,
         periodPain,
         periodColor,
-      }, file || undefined);
+        imagePath: entry?.imagePath || undefined,
+      };
+
+      if (isEditing && entry?.id) {
+        await api.updateEntry(entry.id, payload, file || undefined);
+      } else {
+        await api.createEntry(payload, file || undefined);
+      }
+
       onBack();
     } catch (e) {
       console.error(e);
-      alert('Failed to save entry');
+      alert(isEditing ? 'Failed to update entry' : 'Failed to save entry');
     } finally {
       setLoading(false);
     }
@@ -56,7 +71,7 @@ export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
         <button onClick={onBack} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full">
           <ArrowLeft size={24} />
         </button>
-        <h1 className="font-semibold text-lg">New Entry</h1>
+        <h1 className="font-semibold text-lg">{isEditing ? 'Edit Entry' : 'New Entry'}</h1>
         <button 
           onClick={handleSave} 
           disabled={loading || !mood}
@@ -134,9 +149,15 @@ export default function AddEntryScreen({ onBack }: { onBack: () => void }) {
             <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
               <label className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-600 rounded-full text-sm font-medium cursor-pointer hover:bg-gray-100 transition-colors">
                 <ImageIcon size={16} />
-                {file ? 'Photo selected' : 'Add Photo'}
+                {file ? 'Photo selected' : entry?.imagePath ? 'Replace Photo' : 'Add Photo'}
                 <input type="file" accept="image/*" className="hidden" onChange={e => setFile(e.target.files?.[0] || null)} />
               </label>
+              {entry?.imagePath && !file && (
+                <span className="flex items-center gap-1 px-3 py-2 bg-blue-50 text-blue-500 rounded-full text-sm font-medium">
+                  <ImageIcon size={16} />
+                  Current photo kept
+                </span>
+              )}
             </div>
           </div>
         </section>

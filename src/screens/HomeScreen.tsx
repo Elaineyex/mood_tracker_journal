@@ -4,7 +4,7 @@ import { JournalEntry, MOODS } from '../models/types';
 import { format } from 'date-fns';
 import { PlusCircle, Image as ImageIcon, Calendar } from 'lucide-react';
 
-export default function HomeScreen({ onAdd }: { onAdd: () => void }) {
+export default function HomeScreen({ onAdd, onEdit }: { onAdd: () => void; onEdit: (entry: JournalEntry) => void }) {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +40,12 @@ export default function HomeScreen({ onAdd }: { onAdd: () => void }) {
         entries.map(entry => {
           const mood = MOODS.find(m => m.value === entry.mood);
           return (
-            <div key={entry.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+            <button
+              key={entry.id}
+              type="button"
+              onClick={() => onEdit(entry)}
+              className="w-full text-left bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3 transition-colors hover:border-emerald-200 hover:bg-emerald-50/30 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+            >
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">{mood?.emoji}</span>
@@ -72,7 +77,7 @@ export default function HomeScreen({ onAdd }: { onAdd: () => void }) {
                   <div className="flex items-center gap-1 text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded"><ImageIcon size={14}/> Image attached</div>
                 </div>
               )}
-            </div>
+            </button>
           );
         })
       )}
