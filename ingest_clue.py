@@ -3,9 +3,11 @@ import sqlite3
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+from pathlib import Path
 
 DB_PATH = 'journal.db'
 JSON_PATH = 'ClueDataDownload-2026-02-24/measurements.json'
+ENTRIES_DIR = Path('entries')
 
 def setup_database(cursor):
     """
@@ -93,11 +95,139 @@ def ingest_clue_data(conn):
     conn.commit()
     print(f"Ingested {len(records_by_date)} period log entries.")
 
+def parse_frontmatter_entry(path):
+    """
+    Reads the app's markdown journal entry format and returns frontmatter fields.
+    """
+    try:
+        content = path.read_text(encoding='utf-8')
+    except OSError:
+        return None
+
+    if not content.startswith('---\n'):
+        return None
+
+    parts = content.split('---\n', 2)
+    if len(parts) < 3:
+        return None
+
+    entry = {}
+    for line in parts[1].splitlines():
+        if ':' not in line:
+            continue
+        key, value = line.split(':', 1)
+        entry[key.strip()] = value.strip()
+    return entry
+
+def get_journal_period_logs():
+    """
+    Returns period logs from current markdown journal entries.
+
+    Empty period fields are serialized as blank strings and parsed elsewhere as 0,
+    so only positive flow values count as logged period days.
+    """
+    if not ENTRIES_DIR.exists():
+        return pd.DataFrame(columns=['date', 'flow_volume', 'blood_color', 'pain_score'])
+
+    rows = []
+    for path in ENTRIES_DIR.glob('*.md'):
+        entry = parse_frontmatter_entry(path)
+        if not entry:
+            continue
+
+        try:
+            flow_volume = int(entry.get('periodVolume') or 0)
+        except ValueError:
+            flow_volume = 0
+
+        if flow_volume <= 0:
+            continue
+
+        date_value = entry.get('date') or path.name[:10]
+        date = date_value[:10]
+        if not date:
+            continue
+
+        try:
+            pain_value = entry.get('periodPain') or None
+            pain_score = int(pain_value) if pain_value is not None else None
+        except ValueError:
+            pain_score = None
+
+        blood_color = entry.get('periodColor') or None
+        if blood_color == 'null':
+            blood_color = None
+
+        rows.append({
+            'date': date,
+            'flow_volume': flow_volume,
+            'blood_color': blood_color,
+            'pain_score': pain_score,
+        })
+
+    return pd.DataFrame(rows, columns=['date', 'flow_volume', 'blood_color', 'pain_score'])
+
+def get_period_logs(conn):
+    """
+    Combines imported Clue history with live journal entries, then recomputes
+    period starts from the full timeline so newer journal data drives predictions.
+    """
+    try:
+        db_logs = pd.read_sql_query(
+            "SELECT date, flow_volume, blood_color, pain_score FROM period_logs ORDER BY date",
+            conn
+        )
+    except Exception:
+        db_logs = pd.DataFrame(columns=['date', 'flow_volume', 'blood_color', 'pain_score'])
+
+    journal_logs = get_journal_period_logs()
+    sources = [
+        (0, db_logs),
+        (1, journal_logs),
+    ]
+    non_empty_sources = [(priority, df) for priority, df in sources if not df.empty]
+    if not non_empty_sources:
+        return pd.DataFrame(columns=['date', 'flow_volume', 'blood_color', 'pain_score', 'is_start'])
+
+    rows = []
+    for priority, df in non_empty_sources:
+        source_rows = df.to_dict('records')
+        for row in source_rows:
+            row['_source_priority'] = priority
+        rows.extend(source_rows)
+
+    logs = pd.DataFrame.from_records(rows)
+    if logs.empty:
+        return logs.assign(is_start=pd.Series(dtype=bool))
+
+    logs['date'] = pd.to_datetime(logs['date']).dt.strftime('%Y-%m-%d')
+    logs['flow_volume'] = pd.to_numeric(logs['flow_volume'], errors='coerce')
+    logs = logs[logs['flow_volume'].fillna(0) > 0]
+    if logs.empty:
+        return logs.assign(is_start=pd.Series(dtype=bool))
+
+    # Prefer the editable journal entry when it exists for the same date.
+    logs = (
+        logs.sort_values(['date', '_source_priority'])
+            .drop_duplicates(subset=['date'], keep='last')
+            .drop(columns=['_source_priority'])
+            .sort_values('date')
+            .reset_index(drop=True)
+    )
+
+    dates = pd.to_datetime(logs['date'])
+    logs['is_start'] = dates.diff().dt.days.fillna(99) > 2
+    return logs
+
 def calculate_predictions(conn):
     """
     3. An algorithm for period prediction that accounts for cycle variability.
     """
-    df = pd.read_sql_query("SELECT date FROM period_logs WHERE is_start = 1 ORDER BY date", conn)
+    period_logs = get_period_logs(conn)
+    if period_logs.empty:
+        return None
+
+    df = period_logs[period_logs['is_start'] == True][['date']].copy()
     if df.empty or len(df) < 2:
         return None
         
@@ -112,11 +242,11 @@ def calculate_predictions(conn):
     
     recent_12_cycles = cycles.tail(12)
     avg_cycle_length_12 = recent_12_cycles['cycle_length'].mean()
-    std_cycle_length_12 = recent_12_cycles['cycle_length'].std()
+    std_cycle_length_12 = recent_12_cycles['cycle_length'].std(ddof=0)
     
     last_start_date = df['date'].iloc[-1]
     
-    predicted_start_date = last_start_date + timedelta(days=avg_cycle_length_12)
+    predicted_start_date = last_start_date + timedelta(days=round(avg_cycle_length_12))
     # Ovulation calculated by counting backwards 13 days from predicted next period
     predicted_ovulation_date = predicted_start_date - timedelta(days=13)
     
@@ -133,23 +263,16 @@ def generate_health_summary(conn):
     """
     4. An interface takes the last 3 months of data and generates a natural language health summary for the journal's 'Insights' page.
     """
-    # Use the last recorded date in the database as reference instead of datetime.now() to ensure we have data.
-    cursor = conn.cursor()
-    cursor.execute("SELECT MAX(date) FROM period_logs")
-    last_date_row = cursor.fetchone()
-    if not last_date_row or not last_date_row[0]:
+    period_logs = get_period_logs(conn)
+    if period_logs.empty:
         return "No data available."
-        
-    reference_date = datetime.strptime(last_date_row[0], '%Y-%m-%d')
+
+    reference_date = pd.to_datetime(period_logs['date']).max().to_pydatetime()
     three_months_ago = reference_date - timedelta(days=90)
-    
-    query = f"""
-        SELECT date, flow_volume, is_start 
-        FROM period_logs 
-        WHERE date >= '{three_months_ago.strftime('%Y-%m-%d')}'
-        ORDER BY date
-    """
-    df = pd.read_sql_query(query, conn)
+
+    df = period_logs[
+        pd.to_datetime(period_logs['date']) >= pd.Timestamp(three_months_ago.strftime('%Y-%m-%d'))
+    ][['date', 'flow_volume', 'is_start']].copy()
     
     predictions = calculate_predictions(conn)
     
@@ -158,7 +281,7 @@ def generate_health_summary(conn):
         
     df['date'] = pd.to_datetime(df['date'])
     
-    df['group'] = (df['date'].diff().dt.days > 2).cumsum()
+    df['group'] = df['is_start'].cumsum()
     period_lengths = df.groupby('group').size()
     avg_period_length = period_lengths.mean()
     
