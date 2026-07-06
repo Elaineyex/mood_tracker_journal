@@ -45,7 +45,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans selection:bg-emerald-200">
+    <div className="min-h-screen bg-gray-50 text-gray-900 selection:bg-emerald-200 journal-app-font">
       {currentTab === 'home' && <HomeScreen onAdd={showAdd} onEdit={showEdit} />}
       {currentTab === 'stats' && <StatsScreen />}
       {currentTab === 'add' && <AddEntryScreen onBack={showHome} />}

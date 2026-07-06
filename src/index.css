@@ -1,1 +1,121 @@
 @import "tailwindcss";
+
+.journal-app-font {
+  font-family: var(--animal-font-family);
+}
+
+.journal-app-font input,
+.journal-app-font textarea,
+.journal-app-font button {
+  font-family: var(--animal-font-family);
+}
+
+.journal-entry-screen,
+.journal-entry-screen input,
+.journal-entry-screen textarea,
+.journal-home-screen,
+.stats-screen {
+  color: var(--animal-text-color);
+}
+
+.journal-entry-screen input::placeholder,
+.journal-entry-screen textarea::placeholder {
+  color: var(--animal-text-color-secondary);
+}
+
+.journal-entry-screen .text-gray-300,
+.journal-entry-screen .text-gray-400,
+.journal-entry-screen .text-gray-500,
+.journal-entry-screen .text-gray-600,
+.journal-entry-screen .text-gray-700,
+.journal-entry-screen .text-gray-800,
+.stats-screen .text-gray-300,
+.stats-screen .text-gray-400,
+.stats-screen .text-gray-500,
+.stats-screen .text-gray-600,
+.stats-screen .text-gray-700,
+.stats-screen .text-gray-800,
+.journal-home-screen .text-gray-300,
+.journal-home-screen .text-gray-400,
+.journal-home-screen .text-gray-500,
+.journal-home-screen .text-gray-600,
+.journal-home-screen .text-gray-700,
+.journal-home-screen .text-gray-800 {
+  color: var(--animal-text-color);
+}
+
+.journal-entry-screen .text-emerald-500,
+.stats-screen .text-emerald-500 {
+  color: var(--animal-text-color);
+}
+
+.journal-entry-card {
+  cursor: default;
+}
+
+.health-insights-card,
+.health-insights-card * {
+  color: var(--animal-text-color);
+}
+
+.journal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.journal-title-icon {
+  flex: 0 0 auto;
+}
+
+.journal-title {
+  max-width: min(56vw, 360px);
+}
+
+.journal-time {
+  transform: scale(0.68);
+  transform-origin: top right;
+}
+
+.journal-time.compact {
+  transform: scale(0.56);
+}
+
+.journal-entry-footer {
+  height: 42px;
+  margin-top: -6px;
+  pointer-events: none;
+}
+
+.daily-journal-footer {
+  height: 72px;
+  margin-top: -8px;
+  pointer-events: none;
+}
+
+.activity-collapse-list button {
+  min-width: 0;
+}
+
+.activity-collapse-list .activity-button-selected,
+.period-selector .activity-button-selected {
+  background: #8ac68a;
+  border-color: #8ac68a;
+  color: #fff;
+}
+
+@media (max-width: 430px) {
+  .journal-title-wrap {
+    gap: 6px;
+  }
+
+  .journal-title-icon {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .journal-title {
+    font-size: 20px !important;
+  }
+}

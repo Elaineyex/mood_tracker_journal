@@ -25,5 +25,5 @@ export const ACTIVITIES = {
   Sleep: ['Good', 'Neutral', 'Bad', 'Sleep early', 'Wake early'],
   Social: ['Family', 'Friends', 'Party'],
   Food: ['Fast food', 'Home-made', 'Restaurant', 'Delivery'],
-  Exercise: ['Walking', 'Running', 'Cycling'],
+  Exercise: ['Walking', 'Running', 'Cycling', 'Strength training'],
 };
