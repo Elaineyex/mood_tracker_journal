@@ -5,10 +5,11 @@ A local-first journaling application that tracks your mood, activities, and inte
 
 ## Features
 
-- **Daily Journaling:** Track mood, activities, and gratitude.
+- **Daily Journaling:** Track mood, activities, and gratitude, with support for editing existing entries.
 - **Visual Insights:** Charts for mood trends and distribution.
-- **Health Integration:** Period tracking with prediction logic (based on Clue methodology).
+- **Health Integration:** Live period tracking with prediction logic (based on Clue methodology).
 - **Historical Support:** Add and edit entries for past dates.
+- **Animal Island UI:** Styled with the `animal-island-ui` component library.
 - **Privacy Focused:** Local storage using SQLite and Markdown files.
 
 ## Run Locally
